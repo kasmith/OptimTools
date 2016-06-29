@@ -55,7 +55,7 @@ def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
         while running:
             ntry = new_ps - this_ak*grad
             oob = np.where(np.logical_or(ntry > maxvals, ntry < minvals))[0]
-            new_ps = p - this_ak*grad
+            #new_ps = p - this_ak*grad
             if len(oob) == 0:
                 p -= this_ak*grad
                 running = False
