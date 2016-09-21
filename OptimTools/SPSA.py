@@ -64,7 +64,7 @@ def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
 
         new_val = calc(p)
         old_val = new_val
-        if n_iter % print_iters == 0:
+        if print_iters and n_iter % print_iters == 0:
             print "\tIter %05d" % n_iter, new_val, ak, ck, p
 
         if param_tol is not None:
