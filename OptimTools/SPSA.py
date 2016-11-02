@@ -15,7 +15,6 @@ def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
     n_params = initparams.shape[0]
 
     p = initparams
-    old_val = calc(p)
     saved_p = p*100.
 
     if bounds is not None:
@@ -43,7 +42,9 @@ def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
             p_minus = np.maximum(p_minus,minvals)
 
         try:
-            grad = (calc(p_plus) - calc(p_minus)) / (2.*ck*delta)
+            val_plus = calc(p_plus)
+            val_minus = calc(p_minus)
+            grad = (val_plus - val_minus) / (2.*ck*delta)
         except:
             print p_plus, p_minus, ck, delta
             raise Exception('Stopping')
@@ -62,10 +63,9 @@ def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
             else:
                 this_ak[oob] = this_ak[oob]/2.
 
-        new_val = calc(p)
-        old_val = new_val
+        print_val = (val_plus + val_minus) / 2.
         if print_iters and n_iter % print_iters == 0:
-            print "\tIter %05d" % n_iter, new_val, ak, ck, p
+            print "\tIter %05d" % n_iter, print_val, ak, ck, p
 
         if param_tol is not None:
             pdiff = np.abs(p - saved_p)
@@ -74,5 +74,6 @@ def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
                 continue
         n_iter += 1
 
+    new_val = calc(p)
     return (p, new_val,n_iter)
 
