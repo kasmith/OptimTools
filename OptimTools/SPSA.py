@@ -55,13 +55,22 @@ def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
         running = True
         while running:
             ntry = new_ps - this_ak*grad
-            oob = np.where(np.logical_or(ntry > maxvals, ntry < minvals))[0]
-            #new_ps = p - this_ak*grad
-            if len(oob) == 0:
+            if maxvals is None and minvals is None:
                 p -= this_ak*grad
                 running = False
             else:
-                this_ak[oob] = this_ak[oob]/2.
+                if maxvals is None:
+                    oob = np.where(ntry < minvals)[0]
+                elif minvals is None:
+                    oob = np.where(ntry > maxvals)[0]
+                else:
+                    oob = np.where(np.logical_or(ntry > maxvals, ntry < minvals))[0]
+                #new_ps = p - this_ak*grad
+                if len(oob) == 0:
+                    p -= this_ak*grad
+                    running = False
+                else:
+                    this_ak[oob] = this_ak[oob]/2.
 
         print_val = (val_plus + val_minus) / 2.
         if print_iters and n_iter % print_iters == 0:
