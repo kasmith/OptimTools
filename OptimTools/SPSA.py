@@ -48,6 +48,9 @@ def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
         except:
             print p_plus, p_minus, ck, delta
             raise Exception('Stopping')
+        if np.isnan(val_plus) or np.isnan(val_minus):
+            print p_plus, p_minus, val_plus, val_minus
+            raise Exception('nan found in function calculation')
 
         # Scale parameter movement
         this_ak = np.ones(n_params)*ak
