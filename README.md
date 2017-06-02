@@ -66,6 +66,8 @@ ProducerConsumer(init_function, init_data, process_function, n_cores)
 * process_function: a function that takes in two arguments -- a set of parameters that can vary (but will be the same across all sets of data), and the output from init_function
 * n_cores: the number of process cores to use
 
+You can call the method `run(params)` which will call the process function with those parameters to return the output from all initialized data
+
 An example of this might be:
 
     from OptimTools import ProducerConsumer
