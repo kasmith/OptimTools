@@ -34,28 +34,28 @@ ProducerConsumer is loosely based on http://agiliq.com/blog/2013/10/producer-con
 
 async_map(fun, args, ncpu = cpu_count())
 
-*fun: function to run arguments over
-*args: arguments to give to the function
-*ncpu: the number of cores to use (defaults to all available cores)
+* fun: function to run arguments over
+* args: arguments to give to the function
+* ncpu: the number of cores to use (defaults to all available cores)
 
 async_apply(pool, fun, args)
 
-*pool: a multiprocessing.Pool object
-*fun: function to run arguments over
-*args: arguments to give to the function
+* pool: a multiprocessing.Pool object
+* fun: function to run arguments over
+* args: arguments to give to the function
 
 SPSA(fnc,initparams,a_par = 1e-6, c_par = .01, args = (), bounds = None, param_tol = None, ftol = 1e-8, maxiter = 10000, alpha = .602, gamma = .101, print_iters = 100.)
 
-*fnc: function that returns a log-likelihood to stochastically minimize
-*initparams: initial parameter values for the function
-*a_par, c_par: control parameters
-*args: other arguments to provide to the function
-*bounds: a list of 2-length tuples the size of the initparams list that provide (lower,upper) bounds
-*param_tol: maximum change in any parameter for an iteration
-*ftol: tolerance below which optimization stops
-*maxiter: maximum number of iterations to run
-*alpha, gamma: more control parameters (typically set at these values)
-*print_iters: number of iterations between screen output
+* fnc: function that returns a log-likelihood to stochastically minimize
+* initparams: initial parameter values for the function
+* a_par, c_par: control parameters
+* args: other arguments to provide to the function
+* bounds: a list of 2-length tuples the size of the initparams list that provide (lower,upper) bounds
+* param_tol: maximum change in any parameter for an iteration
+* ftol: tolerance below which optimization stops
+* maxiter: maximum number of iterations to run
+* alpha, gamma: more control parameters (typically set at these values)
+* print_iters: number of iterations between screen output
 
 For further information about SPSA control parameters see http://techdigest.jhuapl.edu/td/td1904/spall.pdf
 
