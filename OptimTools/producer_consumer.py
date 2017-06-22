@@ -1,3 +1,4 @@
+from __future__ import division
 from multiprocessing import Process, Condition, Event, Queue, cpu_count
 import numpy as np
 
@@ -46,6 +47,7 @@ class ProducerConsumer(object):
         n_per_core = int(np.ceil(len(init_data) / n_cores))
         split_dat = [init_data[(i * n_per_core):((i + 1) * n_per_core)] for i in range(n_cores)]
         self._producer_list = []
+        self._proc_fn = process_function
         for i in range(n_cores):
             set_q = Queue()
             get_q = Queue()
@@ -90,16 +92,24 @@ class ProducerConsumer(object):
 
 if __name__ == '__main__':
     import time
+    from scipy.stats import norm
     def initfn(s):
-        time.sleep(s)
-        print "Slept for ", s, "seconds"
+        #time.sleep(s)
+        #print "Slept for ", s, "seconds"
+        print "initialized"
         return s
 
     def procfn(arg, s):
-        print "Adding", arg, "and",s
+        tst = [norm.pdf(10) for _ in range(10000)]
+        print "Ran expensive functions; adding", arg, "and",s
         return arg+s
 
-    procon = ProducerConsumer(initfn, [1.,1.2,2.,1.6], procfn, 2)
+    procon = ProducerConsumer(initfn, [1.,1.2,2.,1.6, 1.7], procfn, 3)
     print "Done"
     print procon.run(2)
-    print procon.run(-1)
+
+    def procfn2(arg, s):
+        print "Now subtracting ", arg, "and", s
+        return arg - s
+
+    del procon
