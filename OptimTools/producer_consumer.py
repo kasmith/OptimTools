@@ -44,8 +44,7 @@ class _Producer(Process):
 class ProducerConsumer(object):
     def __init__(self, init_function, init_data, process_function, n_cores = cpu_count()):
         self._ncore = n_cores
-        n_per_core = int(np.ceil(len(init_data) / n_cores))
-        split_dat = [init_data[(i * n_per_core):((i + 1) * n_per_core)] for i in range(n_cores)]
+        split_dat = [init_data[i::n_cores] for i in range(n_cores)]
         self._producer_list = []
         self._proc_fn = process_function
         for i in range(n_cores):
