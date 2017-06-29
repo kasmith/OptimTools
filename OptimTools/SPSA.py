@@ -1,10 +1,12 @@
 from __future__ import division
 import numpy as np
 import copy
+import json
+import os
 
 def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
          bounds = None, param_tol = None, ftol = 1e-8, maxiter = 10000,
-         alpha = .602, gamma = .101,print_iters = 100.):
+         alpha = .602, gamma = .101,print_iters = 100., savestate=None):
 
     def calc(ps): return fnc(ps, *args)
 
@@ -24,6 +26,17 @@ def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
     else:
         minvals = None
         maxvals = None
+
+    if savestate:
+        if os.path.isfile(savestate):
+            state = json.load(open(savestate,'rU'))
+            for k in ['n_iter','params','saved_params']:
+                assert k in state.keys(), "Malformed savestate: key does not exist " + k
+            n_iter = state['n_iter']
+            p = np.array(state['params'])
+            saved_p = np.array(state['saved_params'])
+            assert p.shape[0] == n_params, "Malformed savestate: parameter lengths do not match"
+
 
 
     while (np.linalg.norm(saved_p - p) / np.linalg.norm(saved_p)) > ftol and n_iter < maxiter:
@@ -78,6 +91,14 @@ def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
         print_val = (val_plus + val_minus) / 2.
         if print_iters and n_iter % print_iters == 0:
             print "\tIter %05d" % n_iter, print_val, ak, ck, p
+            if savestate:
+                with open(savestate,'w') as sfl:
+                    state = {
+                        'n_iter': n_iter,
+                        'params': list(p),
+                        'saved_params': list(saved_p)
+                    }
+                    json.dump(state, sfl)
 
         if param_tol is not None:
             pdiff = np.abs(p - saved_p)
@@ -87,5 +108,7 @@ def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
         n_iter += 1
 
     new_val = calc(p)
+    if savestate:
+        os.remove(savestate)
     return (p, new_val,n_iter)
 
