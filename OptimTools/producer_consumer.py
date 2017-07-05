@@ -1,6 +1,7 @@
 from __future__ import division
 from multiprocessing import Process, Condition, Event, Queue, cpu_count
 import numpy as np
+import time
 
 # A Producer that initializes with loaded data then waits for further processing on that data
 class _Producer(Process):
@@ -42,19 +43,24 @@ class _Producer(Process):
 # The class that will be used -- takes in initialization functions / data, slices them up, then calls a
 #  process_function in a segmented way
 class ProducerConsumer(object):
-    def __init__(self, init_function, init_data, process_function, n_cores = cpu_count()):
+    def __init__(self, init_function, init_data, process_function, n_cores = cpu_count(), timeout = None):
         self._ncore = n_cores
-        split_dat = [init_data[i::n_cores] for i in range(n_cores)]
+        self._split_dat = [init_data[i::n_cores] for i in range(n_cores)]
         self._producer_list = []
+        self._init_fn = init_function
         self._proc_fn = process_function
+        self._timeout = timeout
+        self._lastparams = None
         for i in range(n_cores):
-            set_q = Queue()
-            get_q = Queue()
-            set_cond = Condition()
-            get_cond = Condition()
-            producer = _Producer(init_function, split_dat[i], process_function, [set_q, get_q], [set_cond, get_cond])
-            self._producer_list.append([producer, set_q, set_cond, get_q, get_cond])
-            producer.start()
+            self._producer_list.append(self._make_producer(i))
+
+            #set_q = Queue()
+            #get_q = Queue()
+            #set_cond = Condition()
+            #get_cond = Condition()
+            #producer = _Producer(init_function, self._split_dat[i], process_function, [set_q, get_q], [set_cond, get_cond])
+            #self._producer_list.append([producer, set_q, set_cond, get_q, get_cond])
+            #producer.start()
 
     def run(self, params):
         self._set_params(params)
@@ -71,7 +77,17 @@ class ProducerConsumer(object):
     def __del__(self):
         self.shut_down()
 
+    def _make_producer(self, index):
+        set_q = Queue()
+        get_q = Queue()
+        set_cond = Condition()
+        get_cond = Condition()
+        producer = _Producer(self._init_fn, self._split_dat[index], self._proc_fn, [set_q, get_q], [set_cond, get_cond])
+        producer.start()
+        return producer, set_q, set_cond, get_q, get_cond
+
     def _set_params(self, params):
+        self._lastparams = params
         for p, q, c, _, _ in self._producer_list:
             c.acquire()
             q.put(params)
@@ -79,36 +95,55 @@ class ProducerConsumer(object):
             c.release()
 
     def _get_outcomes(self):
+        starttime = time.time()
         agg = []
-        for p, _, _, q, c in self._producer_list:
+        for i, (p, setq, setcond, q, c) in enumerate(self._producer_list):
             c.acquire()
             if q.empty():
-                c.wait()
+                if self._timeout:
+                    remwait = max(self._timeout + starttime - time.time(), 0.1) # Always give it a small chance to load
+                    c.wait(remwait)
+                    # If the queue remains empty, replace the process and try again with the last parameter set
+                    while q.empty():
+                        setcond.acquire()
+                        p.stop()
+                        setcond.notify()
+                        setcond.release()
+                        print "Process exceeded timeout limit"
+                        print "Init data:", self._split_dat[i]
+                        print "Parameters:", self._lastparams
+                        print "\n"
+                        pgroup = self._make_producer(i)
+                        p, setq, setcond, q, c = pgroup
+                        self._producer_list[i] = pgroup
+                        setcond.acquire()
+                        setq.put(self._lastparams)
+                        setcond.notify()
+                        setcond.release()
+                        c.acquire()
+                        if q.empty():
+                            c.wait(self._timeout)
+                else:
+                    c.wait()
             from_q = q.get()
             agg += from_q
             c.release()
         return agg
 
 if __name__ == '__main__':
-    import time
     from scipy.stats import norm
+    import random
     def initfn(s):
-        #time.sleep(s)
-        #print "Slept for ", s, "seconds"
         print "initialized"
         return s
 
     def procfn(arg, s):
-        tst = [norm.pdf(10) for _ in range(10000)]
-        print "Ran expensive functions; adding", arg, "and",s
-        return arg+s
+        tst = 3*random.random()
+        wait = s + tst
+        print "Waiting for", wait, "seconds"
+        time.sleep(wait)
+        return wait
 
-    procon = ProducerConsumer(initfn, [1.,1.2,2.,1.6, 1.7], procfn, 3)
+    procon = ProducerConsumer(initfn, [1.,1.2,2.,1.6, 1.7], procfn, 3, timeout = None)
     print "Done"
-    print procon.run(2)
-
-    def procfn2(arg, s):
-        print "Now subtracting ", arg, "and", s
-        return arg - s
-
-    del procon
+    print procon.run(1)
