@@ -109,6 +109,7 @@ class ProducerConsumer(object):
                         p.stop()
                         setcond.notify()
                         setcond.release()
+                        p.terminate()
                         print "Process exceeded timeout limit"
                         print "Init data:", self._split_dat[i]
                         print "Parameters:", self._lastparams
@@ -144,6 +145,6 @@ if __name__ == '__main__':
         time.sleep(wait)
         return wait
 
-    procon = ProducerConsumer(initfn, [1.,1.2,2.,1.6, 1.7], procfn, 3, timeout = None)
+    procon = ProducerConsumer(initfn, [1.,1.2,2.,1.6, 1.7], procfn, 3, timeout = 5)
     print "Done"
-    print procon.run(1)
+    print procon.run(2)
