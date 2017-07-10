@@ -56,11 +56,37 @@ def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
 
         try:
             val_plus = calc(p_plus)
+        except Exception as exc:
+            print "Error in calculation of val_plus"
+            print "Params plus:", p_plus
+            print "Params:", p
+            print "C_k:", ck
+            print "Delta:", delta
+            print "Iterations:", n_iter
+            raise exc
+        try:
             val_minus = calc(p_minus)
+        except Exception as exc:
+            print "Error in calculation of val_minus"
+            print "Params minus:", p_minus
+            print "Params:", p
+            print "C_k:", ck
+            print "Delta:", delta
+            print "Iterations:", n_iter
+            raise exc
+        try:
             grad = (val_plus - val_minus) / (2.*ck*delta)
-        except:
-            print p, p_plus, p_minus, ck, delta, n_iter
-            raise Exception('Stopping')
+        except Exception as exc:
+            print "Error in gradient calculation"
+            print "Params plus:", p_plus
+            print "Val plus:", val_plus
+            print "Params minus:", p_minus
+            print "Val minus:", val_minus
+            print "Params:", p
+            print "C_k:", ck
+            print "Delta:", delta
+            print "Iterations:", n_iter
+            raise exc
         if np.isnan(val_plus) or np.isnan(val_minus):
             print p, p_plus, p_minus, val_plus, val_minus, n_iter
             raise Exception('nan found in function calculation')
