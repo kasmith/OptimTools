@@ -2,6 +2,7 @@ from __future__ import division
 from multiprocessing import Process, Condition, Event, Queue, cpu_count
 import numpy as np
 import time
+import random
 
 # A Producer that initializes with loaded data then waits for further processing on that data
 class _Producer(Process):
@@ -16,6 +17,9 @@ class _Producer(Process):
         self._stop = Event()
 
     def run(self):
+        # Initialize random number generators here
+        random.seed()
+        np.random.seed()
         # Run the initial function
         out = [self._init_fn(id) for id in self._init_dat]
         while not self._stop.is_set():
