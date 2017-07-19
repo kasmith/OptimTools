@@ -5,7 +5,7 @@ import json
 import os
 
 def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
-         bounds = None, param_tol = None, ftol = 1e-8, maxiter = 10000,
+         bounds = None, param_tol = None, ftol = 1e-8, maxiter = 10000, maxgrad = None,
          alpha = .602, gamma = .101,print_iters = 100., savestate=None):
 
     def calc(ps): return fnc(ps, *args)
@@ -76,6 +76,12 @@ def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
             raise exc
         try:
             grad = (val_plus - val_minus) / (2.*ck*delta)
+            # Stop yourself if going TOO far
+            if maxgrad:
+                grad_mag = np.linalg.norm(grad)
+                if grad_mag > maxgrad:
+                    grad *= maxgrad / grad_mag
+
         except Exception as exc:
             print "Error in gradient calculation"
             print "Params plus:", p_plus
