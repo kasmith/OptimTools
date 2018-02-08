@@ -105,7 +105,7 @@ class ProducerConsumer(object):
             c.acquire()
             if q.empty():
                 if self._timeout:
-                    remwait = max(self._timeout + starttime - time.time(), 0.1) # Always give it a small chance to load
+                    remwait = max(self._timeout + starttime - time.time(), 1.) # Always give it a small chance to load
                     c.wait(remwait)
                     # If the queue remains empty, replace the process and try again with the last parameter set
                     while q.empty():
@@ -117,6 +117,7 @@ class ProducerConsumer(object):
                         print "Process exceeded timeout limit"
                         print "Init data:", self._split_dat[i]
                         print "Parameters:", self._lastparams
+                        print "Timeout:", self._timeout
                         print "\n"
                         pgroup = self._make_producer(i)
                         p, setq, setcond, q, c = pgroup
@@ -127,7 +128,10 @@ class ProducerConsumer(object):
                         setcond.release()
                         c.acquire()
                         if q.empty():
+                            r = random.randint(0, 100)
+                            print "Start wait time:", r, time.time()
                             c.wait(self._timeout)
+                            print "End wait time:", r, time.time()
                 else:
                     c.wait()
             from_q = q.get()
@@ -152,3 +156,4 @@ if __name__ == '__main__':
     procon = ProducerConsumer(initfn, [1.,1.2,2.,1.6, 1.7], procfn, 3, timeout = 5)
     print "Done"
     print procon.run(2)
+    del procon

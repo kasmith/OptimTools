@@ -3,6 +3,8 @@ import numpy as np
 import copy
 import json
 import os
+import traceback
+import sys
 
 def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
          bounds = None, param_tol = None, ftol = 1e-8, maxiter = 10000, maxgrad = None,
@@ -63,6 +65,7 @@ def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
             print "C_k:", ck
             print "Delta:", delta
             print "Iterations:", n_iter
+            print(traceback.format_exc())
             raise exc
         try:
             val_minus = calc(p_minus)
@@ -73,14 +76,20 @@ def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
             print "C_k:", ck
             print "Delta:", delta
             print "Iterations:", n_iter
+            print(traceback.format_exc())
             raise exc
         try:
-            grad = (val_plus - val_minus) / (2.*ck*delta)
             # Stop yourself if going TOO far
+            val_diff = val_plus - val_minus
             if maxgrad:
-                grad_mag = np.linalg.norm(grad)
-                if grad_mag > maxgrad:
-                    grad *= maxgrad / grad_mag
+                if abs(val_diff) > maxgrad:
+                    if val_diff < 0:
+                        val_diff = -maxgrad
+                    else:
+                        val_diff = maxgrad
+
+            grad = val_diff / (2.*ck*delta)
+            # Stop yourself if going TOO far
 
         except Exception as exc:
             print "Error in gradient calculation"
@@ -143,4 +152,3 @@ def SPSA(fnc, initparams, a_par = 1e-6, c_par = .01, args = (), \
     if savestate:
         os.remove(savestate)
     return (p, new_val,n_iter)
-
