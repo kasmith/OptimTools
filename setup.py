@@ -9,7 +9,7 @@ except:
     raise ImportError('Cannot open dill - may need to be installed with pip')
 
 setup(name = 'OptimTools',
-      version = '0.9',
+      version = '0.91',
       description = 'Tools for code and function optimization',
       author = 'Kevin A Smith',
       author_email = 'k2smith@mit.edu',

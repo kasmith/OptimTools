@@ -1,4 +1,4 @@
-from __future__ import division
+from __future__ import division, print_function
 from multiprocessing import Process, Condition, Event, Queue, cpu_count
 import numpy as np
 import time
@@ -114,11 +114,11 @@ class ProducerConsumer(object):
                         setcond.notify()
                         setcond.release()
                         p.terminate()
-                        print "Process exceeded timeout limit"
-                        print "Init data:", self._split_dat[i]
-                        print "Parameters:", self._lastparams
-                        print "Timeout:", self._timeout
-                        print "\n"
+                        print ("Process exceeded timeout limit")
+                        print ("Init data:", self._split_dat[i])
+                        print ("Parameters:", self._lastparams)
+                        print ("Timeout:", self._timeout)
+                        print ("\n")
                         pgroup = self._make_producer(i)
                         p, setq, setcond, q, c = pgroup
                         self._producer_list[i] = pgroup
@@ -129,9 +129,9 @@ class ProducerConsumer(object):
                         c.acquire()
                         if q.empty():
                             r = random.randint(0, 100)
-                            print "Start wait time:", r, time.time()
+                            print ("Start wait time:", r, time.time())
                             c.wait(self._timeout)
-                            print "End wait time:", r, time.time()
+                            print ("End wait time:", r, time.time())
                 else:
                     c.wait()
             from_q = q.get()
@@ -143,17 +143,17 @@ if __name__ == '__main__':
     from scipy.stats import norm
     import random
     def initfn(s):
-        print "initialized"
+        print ("initialized")
         return s
 
     def procfn(arg, s):
         tst = 3*random.random()
         wait = s + tst
-        print "Waiting for", wait, "seconds"
+        print ("Waiting for", wait, "seconds")
         time.sleep(wait)
         return wait
 
     procon = ProducerConsumer(initfn, [1.,1.2,2.,1.6, 1.7], procfn, 3, timeout = 5)
-    print "Done"
-    print procon.run(2)
+    print ("Done")
+    print (procon.run(2))
     del procon
